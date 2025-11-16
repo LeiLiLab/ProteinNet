@@ -1,8 +1,3 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-#
-# This source code is licensed under the MIT license found in the
-# LICENSE file in the root directory of this source tree.
-
 import ast
 import collections
 import contextlib
@@ -187,7 +182,7 @@ def save_checkpoint(cfg: CheckpointConfig, trainer, epoch_itr, val_loss, save_me
                 PathManager.rm(old_chk)
 
 
-def load_checkpoint(cfg: CheckpointConfig, trainer, **passthrough_args):
+def load_checkpoint(cfg: CheckpointConfig, trainer, data_stage="pretraining-full", **passthrough_args):
     """
     Load a checkpoint and restore the training iterator.
 
@@ -268,12 +263,12 @@ def load_checkpoint(cfg: CheckpointConfig, trainer, **passthrough_args):
         #     epoch=itr_state["epoch"], load_dataset=True, **passthrough_args
         # )
         epoch_itr = trainer.get_train_iterator(
-            epoch=10, load_dataset=True, **passthrough_args
+            epoch=10, load_dataset=True, data_stage=data_stage, **passthrough_args
         )
         epoch_itr.load_state_dict(itr_state)
     else:
         epoch_itr = trainer.get_train_iterator(
-            epoch=0, load_dataset=True, **passthrough_args
+            epoch=0, load_dataset=True, data_stage=data_stage, **passthrough_args
         )
 
     trainer.lr_step(epoch_itr.epoch)
@@ -315,7 +310,7 @@ def load_checkpoint_to_cpu(path, arg_overrides=None, load_on_all_ranks=False):
         local_path = PathManager.get_local_path(path)
 
     with open(local_path, "rb") as f:
-        state = torch.load(f, map_location=torch.device("cpu"))
+        state = torch.load(f, map_location=torch.device("cpu"), weights_only=False)
 
     if "args" in state and state["args"] is not None and arg_overrides is not None:
         args = state["args"]
@@ -485,8 +480,11 @@ def load_model_ensemble_and_task(
                     contents.__setattr__("_metadata", new_metadata)
                 '''====End of work-around logic====='''
 
+                # model.load_state_dict(
+                #     contents, strict=strict, model_cfg=cfg.model
+                # )
                 model.load_state_dict(
-                    contents, strict=strict, model_cfg=cfg.model
+                    contents, strict=strict
                 )
 
             # reset state so it gets loaded for the next model in ensemble

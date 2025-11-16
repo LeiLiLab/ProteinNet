@@ -1,8 +1,3 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-#
-# This source code is licensed under the MIT license found in the
-# LICENSE file in the root directory of this source tree.
-
 try:
     from collections.abc import Iterable
 except ImportError:
@@ -72,7 +67,7 @@ def collate_tokens(
 
 def load_indexed_dataset(
     path, dictionary=None, dataset_impl=None, combine=False, default="cached", source=True, sizes=None, motif_list=None,
-    epoch=1, train=True, split="train", protein="None"
+    epoch=1, train=True, split="train", protein="None", data_stage="pretraining-full"
 ):
     """A helper function for loading indexed datasets.
 
@@ -82,22 +77,12 @@ def load_indexed_dataset(
         dataset_impl (str, optional): which dataset implementation to use. If
             not provided, it will be inferred automatically. For legacy indexed
             data we use the 'cached' implementation by default.
-        combine (bool, optional): automatically load and combine multiple
-            datasets. For example, if *path* is 'data-bin/train', then we will
-            combine 'data-bin/train', 'data-bin/train1', ... and return a
-            single ConcatDataset instance.
     """
     import fairseq.data.indexed_dataset as indexed_dataset
 
-    datasets = []
-    for k in itertools.count():
-        path_k = path + (str(k) if k > 0 else "")
-        dataset_impl_k = dataset_impl
-        if dataset_impl_k is None:
-            dataset_impl_k = indexed_dataset.infer_dataset_impl(path_k)
-        dataset = indexed_dataset.make_dataset(
-            path_k,
-            impl=dataset_impl_k or default,
+    dataset = indexed_dataset.make_dataset(
+            path,
+            dataset_impl,
             fix_lua_indexing=True,
             dictionary=dictionary,
             source=source,
@@ -106,18 +91,11 @@ def load_indexed_dataset(
             epoch=epoch,
             train=train,
             split=split,
-            protein=protein
+            protein=protein,
+            data_stage=data_stage
         )
-        if dataset is None:
-            break
-        logger.info("loaded {:,} examples from: {}".format(len(dataset), path_k))
-        datasets.append(dataset)
-        if not combine:
-            break
-    if len(datasets) == 0:
-        return None
-    else:
-        return datasets[0]
+    logger.info("loaded {:,} examples from: {}".format(len(dataset), path))
+    return dataset
 
 
 @contextlib.contextmanager

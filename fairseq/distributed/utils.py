@@ -525,7 +525,8 @@ def broadcast(tensor, src, group):
             tensor.zero_()
         all_reduce(tensor, group)
     else:
-        dist.broadcast(tensor, src=src, group=group)
+        dist.broadcast(tensor.contiguous(), src=src, group=group)
+        # dist.broadcast(tensor, src=src, group=group)
 
 
 def all_to_all(tensor, group):
@@ -778,7 +779,7 @@ def _broadcast_object_slow(
         buffer = torch.ByteTensor(int(length.item())).to(dist_device)
         broadcast(buffer, src=src_rank, group=group)
         buffer = io.BytesIO(buffer.cpu().numpy())
-        obj = torch.load(buffer, map_location="cpu")
+        obj = torch.load(buffer, map_location="cpu", weights_only=False)
     return obj
 
 

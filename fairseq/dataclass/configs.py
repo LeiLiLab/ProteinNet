@@ -274,7 +274,7 @@ class DistributedTrainingConfig(FairseqDataclass):
         default=0,
         metadata={
             "help": "which GPU to use (usually configured automatically)",
-            "argparse_alias": "--local_rank",
+            "argparse_alias": "--local-rank",
         },
     )
     distributed_no_spawn: bool = field(

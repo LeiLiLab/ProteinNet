@@ -44,7 +44,7 @@ DDP_BACKEND_CHOICES = ChoiceEnum([
     "slow_mo",
 ])
 DDP_COMM_HOOK_CHOICES = ChoiceEnum(["none", "fp16"])
-DATASET_IMPL_CHOICES = ChoiceEnum(["raw", "fasta", "coor", "motif", "pdb", "protein_complex", "protein_complex_pretrain", "binder_design", "antibody_design"])
+DATASET_IMPL_CHOICES = ChoiceEnum(["raw", "fasta", "coor", "motif", "pdb", "text_protein"])
 GENERATION_CONSTRAINTS_CHOICES = ChoiceEnum(["ordered", "unordered"])
 GENERATION_DECODING_FORMAT_CHOICES = ChoiceEnum(
     ["unigram", "ensemble", "vote", "dp", "bs"]

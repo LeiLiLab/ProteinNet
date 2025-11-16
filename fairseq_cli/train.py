@@ -1,8 +1,3 @@
-#!/usr/bin/env python3 -u
-# Copyright (c) Facebook, Inc. and its affiliates.
-#
-# This source code is licensed under the MIT license found in the
-# LICENSE file in the root directory of this source tree.
 """
 Train a new model on one or across multiple GPUs.
 """
@@ -83,6 +78,8 @@ def main(cfg: FairseqConfig, rank, world_size) -> None:
 
     # Print args
     logger.info(cfg)
+    data_stage = cfg.task.data_stage
+    print(data_stage)
 
     if cfg.checkpoint.write_checkpoints_asynchronously:
         try:
@@ -103,21 +100,7 @@ def main(cfg: FairseqConfig, rank, world_size) -> None:
     if cfg.distributed_training.ddp_backend == "fully_sharded":
         with fsdp_enable_wrap(cfg.distributed_training):
             print("true")
-            #model = fsdp_wrap(task.build_model(cfg.model))
-            
-            # Add this before the FSDP wrap
-            def print_model_device_map(model):
-                for name, param in model.named_parameters():
-                    print(f"{name}: {param.device}")
-
-            # Test code
-            model = task.build_model(cfg.model)
-            print("true2")
-            # model = model.to("cpu")
-            # print_model_device_map(model)
-            model = fsdp_wrap(model)
-            
-            # print_model_device_map(model)
+            model = fsdp_wrap(task.build_model(cfg.model))
     else:
         model = task.build_model(cfg.model)
     criterion = task.build_criterion(cfg.criterion)
@@ -143,10 +126,10 @@ def main(cfg: FairseqConfig, rank, world_size) -> None:
     # We load the valid dataset AFTER building the model
     # data_utils.raise_if_valid_subsets_unintentionally_ignored(cfg)
     if cfg.dataset.combine_valid_subsets:
-        task.load_dataset("valid", combine=True, epoch=1)
+        task.load_dataset("valid", combine=True, epoch=1, data_stage=data_stage)
     else:
         for valid_sub_split in cfg.dataset.valid_subset.split(","):
-            task.load_dataset(valid_sub_split, combine=False, epoch=1)
+            task.load_dataset(valid_sub_split, combine=False, epoch=1, data_stage=data_stage)
 
     # (optionally) Configure quantization
     if cfg.common.quantization_config_path is not None:
@@ -182,6 +165,7 @@ def main(cfg: FairseqConfig, rank, world_size) -> None:
         trainer,
         # don't cache epoch iterators for sharded datasets
         disable_iterator_cache=task.has_sharded_data("train"),
+        data_stage=data_stage
     )
     if cfg.common.tpu:
         import torch_xla.core.xla_model as xm
@@ -215,6 +199,7 @@ def main(cfg: FairseqConfig, rank, world_size) -> None:
             load_dataset=False,
             # don't cache epoch iterators for sharded datasets
             disable_iterator_cache=task.has_sharded_data("train"),
+            data_stage=data_stage
         )
     train_meter.stop()
     logger.info("done training in {:.1f} seconds".format(train_meter.sum))
@@ -524,7 +509,6 @@ def cli_main(
         server = PlasmaStore(path=cfg.common.plasma_path)
         logger.info(f"Started plasma server pid {server.server.pid} {cfg.common.plasma_path}")
 
-    # main(cfg)
     if args.profile:
         with torch.cuda.profiler.profile():
             with torch.autograd.profiler.emit_nvtx():

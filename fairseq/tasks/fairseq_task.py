@@ -8,6 +8,7 @@ import os
 import warnings
 from argparse import Namespace
 from typing import Any, Callable, Dict, List
+import numpy as np
 
 import torch
 from fairseq import metrics, utils
@@ -238,6 +239,8 @@ class FairseqTask(object):
         # get indices ordered by example size
         with data_utils.numpy_seed(seed):
             indices = dataset.ordered_indices()
+        # test
+        # indices = np.arange(len(dataset), dtype=np.int64)
 
         # filter examples that are too large
         if max_positions is not None:
@@ -500,3 +503,4 @@ class LegacyFairseqTask(FairseqTask):
         from fairseq import criterions
 
         return criterions.build_criterion(args, self)
+    

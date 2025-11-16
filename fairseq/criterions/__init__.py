@@ -21,7 +21,7 @@ from omegaconf import DictConfig
     CRITERION_REGISTRY,
     CRITERION_DATACLASS_REGISTRY,
 ) = registry.setup_registry(
-    "--criterion", base_class=FairseqCriterion, default="cross_entropy"
+    "--criterion", base_class=FairseqCriterion, default="geometric_protein_ncbi_loss"
 )
 
 

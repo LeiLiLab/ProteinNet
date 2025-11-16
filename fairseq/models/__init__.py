@@ -10,11 +10,11 @@ import os
 from contextlib import ExitStack
 
 from fairseq.dataclass import FairseqDataclass
-from .distributed_fairseq_model import DistributedFairseqModel
 from fairseq.dataclass.utils import merge_with_parent
 from hydra.core.config_store import ConfigStore
 from omegaconf import open_dict, OmegaConf
 
+from .distributed_fairseq_model import DistributedFairseqModel
 from .fairseq_decoder import FairseqDecoder
 from .fairseq_encoder import FairseqEncoder
 from .fairseq_incremental_decoder import FairseqIncrementalDecoder
@@ -38,7 +38,6 @@ ARCH_CONFIG_REGISTRY = {}
 
 __all__ = [
     "BaseFairseqModel",
-    "CompositeEncoder",
     "DistributedFairseqModel",
     "FairseqDecoder",
     "FairseqEncoder",
@@ -129,10 +128,10 @@ def register_model(name, dataclass=None):
     def register_model_cls(cls):
         if name in MODEL_REGISTRY:
             raise ValueError("Cannot register duplicate model ({})".format(name))
-        if not issubclass(cls, BaseFairseqModel):
-            raise ValueError(
-                "Model ({}: {}) must extend BaseFairseqModel".format(name, cls.__name__)
-            )
+        # if not issubclass(cls, BaseFairseqModel):
+        #     raise ValueError(
+        #         "Model ({}: {}) must extend BaseFairseqModel".format(name, cls.__name__)
+        #     )
         MODEL_REGISTRY[name] = cls
         if dataclass is not None and not issubclass(dataclass, FairseqDataclass):
             raise ValueError(

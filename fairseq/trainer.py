@@ -505,10 +505,13 @@ class Trainer(object):
 
             # load model parameters
             try:
+                # self.model.load_state_dict(
+                #     state["model"], strict=False, model_cfg=self.cfg.model
+                # )
                 self.model.load_state_dict(
-                    state["model"], strict=False, model_cfg=self.cfg.model
+                    state["model"], strict=False
                 )
-                self.model.update_metadata(getattr(state["model"], "_metadata", None))
+                # self.model.update_metadata(getattr(state["model"], "_metadata", None))
                 # save memory for later steps
                 del state["model"]
                 if utils.has_parameters(self.get_criterion()):
@@ -625,6 +628,7 @@ class Trainer(object):
         shard_batch_itr=True,
         disable_iterator_cache=False,
         rank=0,
+        data_stage="pretraining-full"
     ):
         """Return an EpochBatchIterator over the training set for a given epoch."""
         if load_dataset:
@@ -633,6 +637,7 @@ class Trainer(object):
                 self.cfg.dataset.train_subset,
                 epoch=epoch,
                 combine=combine,
+                data_stage=data_stage, 
                 data_selector=data_selector,
                 tpu=self.tpu
             )
@@ -642,44 +647,6 @@ class Trainer(object):
             max_sentences=self.cfg.dataset.batch_size,
             max_positions=utils.resolve_max_positions(
                 self.task.max_positions(),
-                self.cfg.dataset.max_tokens,
-            ),
-            ignore_invalid_inputs=True,
-            required_batch_size_multiple=self.cfg.dataset.required_batch_size_multiple,
-            seed=self.cfg.common.seed,
-            num_shards=self.data_parallel_world_size if shard_batch_itr else 1,
-            shard_id=self.data_parallel_rank if shard_batch_itr else 0,
-            num_workers=self.cfg.dataset.num_workers,
-            epoch=epoch,
-            data_buffer_size=self.cfg.dataset.data_buffer_size,
-            disable_iterator_cache=disable_iterator_cache,
-        )
-        self.reset_dummy_batch(batch_iterator.first_batch)
-        return batch_iterator
-
-    def get_cbas_train_iterator(
-        self,
-        epoch,
-        combine=True,
-        load_dataset=True,
-        data_selector=None,
-        shard_batch_itr=True,
-        disable_iterator_cache=False,
-    ):
-        """Return an EpochBatchIterator over the training set for a given epoch."""
-        if load_dataset:
-            logger.info("loading round training data for epoch {}".format(epoch))
-            self.task.load_round_dataset(
-                self.cfg.dataset.train_subset,
-                self._model
-            )
-        batch_iterator = self.task.get_batch_iterator(
-            dataset=self.task.dataset(self.cfg.dataset.train_subset),
-            max_tokens=self.cfg.dataset.max_tokens,
-            max_sentences=self.cfg.dataset.batch_size,
-            max_positions=utils.resolve_max_positions(
-                self.task.max_positions(),
-                self.model.max_positions(),
                 self.cfg.dataset.max_tokens,
             ),
             ignore_invalid_inputs=True,
