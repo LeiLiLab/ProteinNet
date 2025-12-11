@@ -176,6 +176,24 @@ TPMT:
 bash generate_TPMT.sh
 ```
 
+<h2>Designing Your Own Protein</h2>
+
+If you want to design your own protein, follow the pipeline below:
+
+First, you'll need to prepare your own data, we provide the example of design beta-lactam antibiotics with the motif from PDB entry 3DWZ:
+
+```ruby
+cd example
+python prepare_example_data.py --pdb_file_path 3DWZ.cif --protein_id 3DWZ --motif "6,8,9,14-18,23,30-44,47,49-52,54,60,64,66,70,75-78,80-87,94-118,125,126,129,130,132,134-136,139-143,147-156,160,163,166,168-172,177-184,187-190,194-197,199,200,202,204,206-209,211,213,214,217,218-223,229,231,234,238,245,246,251-256" --pdb 1 --ncbi_tag "83332" --output_path "example.json"
+cd ..
+```
+
+Then run the generation code as follows. Please make sure the ncbi tag in the generated example is the same as the one in generate_new_example.sh:
+
+```ruby
+bash generate_new_example.sh
+```
+
 <h2>Evaluation</h2>
 
 WE provide the pdb to enzyme class (EC) category mapping at [PDB_to_EC_Mapping](https://drive.google.com/file/d/1g5lI2jFKPe1m6U8eu4Onsw7mRkFAA4IT/view?usp=sharing). By using this mapping data, you can gather the results for each enzyme class.
