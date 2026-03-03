@@ -212,5 +212,5 @@ The evaluation code for ESP score is developed by Alexander Kroll, which can be 
 
 <h3>Expected Results for the Pretrained ProteinNet</h3>
 
-![image](./Full_In_Silico_Results_v4.png)
+![image](./Full_In_Silico_Results_v6.png)
 
