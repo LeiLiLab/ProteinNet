@@ -6,7 +6,7 @@ This repository contains code, data and model weights.
 
 The overall model architecture is shown below:
 
-![image](./ProteinNet_overall.png)
+![image](./ProteinNet_overall.pdf)
 
 
 <h2>Environment</h2>
